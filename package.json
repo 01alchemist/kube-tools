@@ -1,7 +1,8 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
+  "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
   "engines": {
     "node": "12"
