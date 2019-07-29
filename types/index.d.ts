@@ -7,6 +7,7 @@ type KubeDeployOptions = {
   context?: string;
   "image.tag"?: string;
   basePath?: string;
+  dryRun?: boolean;
   __values?: any;
 };
 export function kubeDeploy(_options?: KubeDeployOptions): Promise<1 | 0>;

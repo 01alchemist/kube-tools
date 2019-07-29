@@ -69,21 +69,17 @@ function printConfig({
 }
 
 export async function kubeDeploy(_options: KubeDeployOptions = {}) {
-  let options = {
-    ...defaultOptions,
-    ..._options
-  };
-  let config = null;
-  if (options.config) {
-    config = loadConfig(options.config);
-
-    options = {
-      ...options,
-      ...config.app,
-      basePath: config.basePath,
-      __values: config.values
-    };
+  let config = { app: {}, basePath: ".", values: {} };
+  if (_options.config) {
+    config = loadConfig(_options.config);
   }
+  let options: KubeDeployOptions = {
+    ...defaultOptions,
+    ...config.app,
+    ..._options,
+    basePath: config.basePath,
+    __values: config.values
+  };
   const cwd = process.cwd();
   const { basePath, chart: _chart, values: _values } = options;
   options.chart = path.resolve(cwd, basePath, _chart);
