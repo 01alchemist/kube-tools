@@ -8,21 +8,24 @@ type HemlUpgradeOptions = {
   chart: string;
   values?: string;
   imageTag: string;
+  dryRun?: boolean;
 };
 
 // prettier-ignore
-const helm = ({name, imageTag, chart, values}:HemlUpgradeOptions) => [
+const helm = (
+  {name, imageTag, chart, values, dryRun = false}:HemlUpgradeOptions
+  ) => [
   "helm",
   "upgrade",                            // Upgrade service
-  "--dry-run",                          // Install if service not exist
+  ...(dryRun?["--dry-run"]:[]),         // Simulate an upgrade
   "--install",                          // Install if service not exist
-  ...(values?["--values", values]:[]),  // helm/stage-helm-values.yml
+  ...(values?["--values", values]:[]),  // helm chart values.yml
   "--set", `image.tag=${imageTag}`,     // image.tag=${CIRCLE_SHA1}
   name,                                 // Release name
-  chart                                 // helm/chart
+  chart                                 // helm chart
 ];
 
-const { white, red, blue, bgRed: bgR } = chalk;
+const { white, red, blue, bgRed: bgRed } = chalk;
 
 type KubeDeployOptions = {
   chart?: string;
@@ -32,6 +35,7 @@ type KubeDeployOptions = {
   context?: string;
   "image.tag"?: string;
   basePath?: string;
+  dryRun?: boolean;
   __values?: any; //Actual values of values.yml
 };
 
@@ -40,6 +44,7 @@ const defaultOptions = {
   name: "",
   "image.tag": "",
   basePath: ".",
+  dryRun: false,
   context: process.env.KUBE_CONTEXT || "stage-cluster"
 };
 
@@ -84,13 +89,13 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
   options.chart = path.resolve(cwd, basePath, _chart);
   options.values = path.resolve(cwd, basePath, _values);
 
-  const { chart, name, "image.tag": imageTag, values } = options;
+  const { chart, name, "image.tag": imageTag, values, dryRun } = options;
 
   if (!name) {
     console.log(
       red(
         `
-  Oops 😬, Did you forgot to pass option ${bgR(
+  Oops 😬, Did you forgot to pass option ${bgRed(
     white(" service ")
   )}?. Please tell me, which service you want to deploy!
         `
@@ -103,7 +108,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
     console.log(
       red(
         `
-  Oops 😬, Did you forgot to pass option ${bgR(
+  Oops 😬, Did you forgot to pass option ${bgRed(
     white(" image.tag ")
   )}?. Please tell me, which image tag you want to deploy!
         `
@@ -131,28 +136,27 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
   const serviceList = services.split("\n");
 
   if (serviceList.includes(name)) {
-    /**
-     * Helm upgrade if already deployed
-     */
     console.log(
       blue(`
     🧩  Upgrading ${name} ...
     `)
     );
-    printConfig(options);
   } else {
-    /**
-     * Helm install if not deployed
-     */
-    console.log(`Installing ${name} ...`);
+    console.log(`
+    🧩  Installing ${name} ...
+    `);
   }
+
+  printConfig(options);
+
   try {
     await launch({
       cmds: helm({
         name,
         chart,
         imageTag,
-        values
+        values,
+        dryRun
       })
     });
 
