@@ -68,6 +68,17 @@ function printConfig({
   `);
 }
 
+const logError = (prop: string, msg: string) =>
+  console.log(
+    red(
+      `
+Oops 😬, Did you forgot to pass option ${bgRed(
+        white(` ${prop} `)
+      )}?. Please tell me, ${msg}!
+    `
+    )
+  );
+
 export async function kubeDeploy(_options: KubeDeployOptions = {}) {
   let config = { app: {}, basePath: ".", values: {} };
   if (_options.config) {
@@ -88,29 +99,21 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
   const { chart, name, "image.tag": imageTag, values, dryRun } = options;
 
   if (!name) {
-    console.log(
-      red(
-        `
-  Oops 😬, Did you forgot to pass option ${bgRed(
-    white(" service ")
-  )}?. Please tell me, which service you want to deploy!
-        `
-      )
-    );
+    logError(" service ", "which service you want to deploy!");
     process.exit(1);
+    return;
   }
 
   if (!imageTag) {
-    console.log(
-      red(
-        `
-  Oops 😬, Did you forgot to pass option ${bgRed(
-    white(" image.tag ")
-  )}?. Please tell me, which image tag you want to deploy!
-        `
-      )
-    );
+    logError(" image.tag ", "which image tag you want to deploy");
     process.exit(1);
+    return;
+  }
+
+  if (!chart) {
+    logError(" chart ", "which chart you want to deploy!");
+    process.exit(1);
+    return;
   }
 
   const kubeContext = options.context;
