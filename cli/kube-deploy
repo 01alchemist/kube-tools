@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+require("source-map-support").install();
+const minimist = require("minimist");
+const { kubeDeploy } = require("../dist/index.js");
+
+const options = minimist(process.argv.slice(2));
+kubeDeploy(options)
+  .then(code => {
+    process.exit(code);
+  })
+  .catch(() => {
+    process.exit(1);
+  });
