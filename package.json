@@ -4,7 +4,11 @@
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
-  "keywords": ["kubernetes", "deployment", "tools"],
+  "keywords": [
+    "kubernetes",
+    "deployment",
+    "tools"
+  ],
   "engines": {
     "node": "12"
   },
