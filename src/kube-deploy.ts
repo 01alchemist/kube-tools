@@ -45,7 +45,7 @@ const defaultOptions = {
   "image.tag": "",
   basePath: ".",
   dryRun: false,
-  context: process.env.KUBE_CONTEXT || "stage-cluster"
+  context: process.env.KUBE_CONTEXT || "minikube"
 };
 
 function printConfig({

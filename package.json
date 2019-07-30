@@ -1,9 +1,10 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
+  "keywords": ["kubernetes", "deployment", "tools"],
   "engines": {
     "node": "12"
   },
@@ -11,7 +12,8 @@
   "typings": "types/index.d.ts",
   "files": [
     "dist",
-    "types"
+    "types",
+    "cli"
   ],
   "bin": {
     "kube": "./cli/index",
