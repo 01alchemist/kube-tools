@@ -1,6 +1,6 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
@@ -10,7 +10,7 @@
     "tools"
   ],
   "engines": {
-    "node": "12"
+    "node": ">=8"
   },
   "main": "dist/index.js",
   "typings": "types/index.d.ts",
