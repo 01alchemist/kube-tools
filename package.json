@@ -1,6 +1,6 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
@@ -13,7 +13,7 @@
     "node": ">=8"
   },
   "main": "dist/index.js",
-  "typings": "types/index.d.ts",
+  "typings": "dist/index.d.ts",
   "files": [
     "dist",
     "types",
@@ -25,7 +25,8 @@
   },
   "scripts": {
     "start": "webpack --watch",
-    "build": "webpack",
+    "build.dev": "webpack",
+    "build": "NODE_ENV=production webpack",
     "precommit": "lint-staged",
     "test": "echo no tests",
     "prettier": "prettier --write '**/*.{js,json,ts,gql,graphql}'",
