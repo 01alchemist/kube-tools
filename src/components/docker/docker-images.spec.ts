@@ -46,7 +46,7 @@ describe("Docker test suite", () => {
     await sleep(1000);
   });
 
-  it("Should get images with filter", async () => {
+  xit("Should get images with filter", async () => {
     const { USER } = process.env;
     await expect(dockerBuild({}, { silent: true })).resolves.not.toThrow();
     const result = await docker(
