@@ -55,7 +55,7 @@ function printConfig({
   "image.tag": imageTag,
   __values: { env, replicas, image }
 }: any) {
-  console.log(`    ⚙️  Configuration
+  console.log(`    ⚙️  Deployment Configuration
       
       📦 Service name           : ${name}
       🌍 Environment            : ${env}

@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-require("source-map-support").install();
-const { launch } = require("../dist/index.js");
-
-launch({
-  mode: "cli",
-  exitProcessOnClose: true
-});

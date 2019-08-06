@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@01/launcher@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@01/launcher/-/launcher-1.0.3.tgz#cb1e56063c8d68bac2f2e213ca764c39aa76c817"
-  integrity sha512-C5BW7gr+VbH617W1d1eI7rY0WGbg3HLMJBmu2h6ApbKj118gJ4QDFvAH4nBXM1KMU8r5kAMoNVW0CsNYD6GqPw==
+"@01/launcher@1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@01/launcher/-/launcher-1.0.8.tgz#92dfaca7b99e3ed5a112eea33e1acd55a72c0cb9"
+  integrity sha512-DoM5fTnDJcHm70BQESWAlSAUM/aRnroFT376iAZZ0eijlnEMc9ALwIeRD930TGWpnrNm8Lp0qfSzAlyWWqBG4g==
   dependencies:
     minimist "1.2.0"
 
@@ -1285,6 +1285,11 @@ copy-descriptor@^0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/copy-descriptor/-/copy-descriptor-0.1.1.tgz#676f6eb3c39997c2ee1ac3a924fd6124748f578d"
   integrity sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=
+
+core-js@3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.1.4.tgz#3a2837fc48e582e1ae25907afcd6cf03b0cc7a07"
+  integrity sha512-YNZN8lt82XIMLnLirj9MhKDFZHalwzzrL9YLt6eb0T5D0EDl4IQ90IGkua8mHbnxNrkj1d8hbdizMc0Qmg1WnQ==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -4335,10 +4340,10 @@ slash@^2.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-2.0.0.tgz#de552851a1759df3a8f206535442f5ec4ddeab44"
   integrity sha512-ZYKh3Wh2z1PpEXWr0MpSBZ0V6mZHAQfYevttO11c51CaWjGTaadiKZ+wVt1PbMlDV5qhMFslpZCemhwOK7C89A==
 
-sls-yaml@1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/sls-yaml/-/sls-yaml-1.0.6.tgz#f388eefafad76ad119ca1c69d996d84b9a253a90"
-  integrity sha512-SSlNF2k6h4EgkqzjvH1KN6BZPeJhFP517qNET+vp+01Moi6d6tcclNEBQObe++X2JGK1/t25yxqsSK/Fa0TNrg==
+sls-yaml@1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/sls-yaml/-/sls-yaml-1.0.11.tgz#fdf950b78f9d2b02b9168bdc84d1a84f880d57d9"
+  integrity sha512-5KXE6pOOwT9h0cW9HUPjs5GxQMB/rMt5J0tNHPIbj5y20d6/QRMnXvu63/yh4yAl8FfB0QIKumxD6n048MXvvQ==
   dependencies:
     js-yaml "3.13.1"
     lodash.get "^4.4.2"

@@ -12,12 +12,24 @@
       "statements": 100
     }
   },
+  "setupFilesAfterEnv": [
+    "./tests/jest-setup.js"
+  ],
   "transform": {
     ".(ts|tsx)$": "ts-jest"
   },
   "testRegex": "(\\.(test|spec))\\.(ts)$",
-  "moduleFileExtensions": ["ts", "js"],
-  "modulePathIgnorePatterns": ["bin", ".history"],
+  "moduleFileExtensions": [
+    "ts",
+    "js"
+  ],
+  "modulePathIgnorePatterns": [
+    "bin",
+    ".history"
+  ],
   "moduleNameMapper": {},
-  "moduleDirectories": ["node_modules", "src"]
+  "moduleDirectories": [
+    "node_modules",
+    "src"
+  ]
 }
