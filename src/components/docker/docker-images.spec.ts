@@ -19,7 +19,9 @@ afterAll(async () => {
     }
   );
   const repos = result.split("\n").filter(repo => repo);
-  await docker("rmi", repos, { silent: true });
+  if (repos.length > 0) {
+    await docker("rmi", repos, { silent: true });
+  }
 });
 
 describe("Docker test suite", () => {
