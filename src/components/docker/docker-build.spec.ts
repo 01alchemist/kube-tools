@@ -15,7 +15,11 @@ afterAll(async () => {
   );
   const repos = result.split("\n").filter(repo => repo);
   if (repos.length > 0) {
-    await docker("rmi", repos, { silent: true });
+    try {
+      await docker("rmi", repos, { silent: true });
+    } catch (e) {
+      //ignore, images might already removed
+    }
   }
 });
 

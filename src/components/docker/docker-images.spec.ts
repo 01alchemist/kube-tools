@@ -20,16 +20,20 @@ afterAll(async () => {
   );
   const repos = result.split("\n").filter(repo => repo);
   if (repos.length > 0) {
-    await docker("rmi", repos, { silent: true });
+    try {
+      await docker("rmi", repos, { silent: true });
+    } catch (e) {
+      //ignore, images might already removed
+    }
   }
 });
 
 describe("Docker test suite", () => {
-  xit("Should get all images", async () => {
+  it("Should get all images", async () => {
     await expect(docker("images", {}, { silent: true })).resolves.not.toThrow();
   });
 
-  xit("Should get images with specific output format", async () => {
+  it("Should get images with specific output format", async () => {
     await expect(
       docker(
         "images",
