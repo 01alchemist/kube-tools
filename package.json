@@ -1,6 +1,6 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
@@ -39,7 +39,7 @@
     ]
   },
   "dependencies": {
-    "sls-yaml": "1.0.11",
+    "sls-yaml": "1.0.12",
     "minimist": "1.2.0",
     "source-map-support": "^0.5.12",
     "core-js": "3.1.4"
