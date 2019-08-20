@@ -2,11 +2,12 @@
 # yarn lockfile v1
 
 
-"@01/launcher@1.0.8":
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/@01/launcher/-/launcher-1.0.8.tgz#92dfaca7b99e3ed5a112eea33e1acd55a72c0cb9"
-  integrity sha512-DoM5fTnDJcHm70BQESWAlSAUM/aRnroFT376iAZZ0eijlnEMc9ALwIeRD930TGWpnrNm8Lp0qfSzAlyWWqBG4g==
+"@01/launcher@1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@01/launcher/-/launcher-1.0.9.tgz#9228cd91b74143fbf59232e402dbad7b488854a3"
+  integrity sha512-mLxP04RzbeYAh+XRTXi90mJNpj6SNBnDqpreT095BUF61mSYu1VMp4AaGIK5Kszz86WuL4RfvJ/3nNddHS2rSw==
   dependencies:
+    dotenv "8.0.0"
     minimist "1.2.0"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.5.5":
@@ -1534,6 +1535,11 @@ domexception@^1.0.1:
   integrity sha512-raigMkn7CJNNo6Ihro1fzG7wr3fHuYVytzquZKX5n0yizGsTcYgzdIUwj1X9pK0VvjeihV+XiclP+DjwbsSKug==
   dependencies:
     webidl-conversions "^4.0.2"
+
+dotenv@8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.0.0.tgz#ed310c165b4e8a97bb745b0a9d99c31bda566440"
+  integrity sha512-30xVGqjLjiUOArT4+M5q9sYdvuR4riM6yK9wMcas9Vbp6zZa+ocC9dp6QoftuhTPhFAiLK/0C5Ni2nou/Bk8lg==
 
 duplexify@^3.4.2, duplexify@^3.6.0:
   version "3.7.1"
