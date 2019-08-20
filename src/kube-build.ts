@@ -13,16 +13,23 @@ type KubeConfig = {
 type KubeBuildOptions = {
   config: string;
   basePath?: string;
-  __values?: any; //Actual values of values.yml
 } & DockerBuildOptions;
 
-function printConfig({ app, values: { env, image } }: any) {
+function printConfig({
+  env,
+  app: {
+    name,
+    helm: {
+      values: { source: values }
+    }
+  }
+}: any) {
   console.log(`    ⚙️  Build Configuration
 
-      📦 Service name           : ${app.name}
+      📦 Service name           : ${name}
       🌍 Environment            : ${env}
-      💿 Image tag              : ${app["image.tag"]}
-      💿 Image repository       : ${image.repository}
+      💿 Image tag              : ${values["image.tag"]}
+      💿 Image repository       : ${values["image.repository"]}
   `);
 }
 
@@ -49,16 +56,23 @@ export async function kubeBuild(_options: KubeBuildOptions) {
   if (_options.config) {
     config = loadConfig(_options.config);
   }
-  const { image } = config.values;
-  const { "image.tag": tag } = config.app;
+
+  const { helm } = config.app;
+  const {
+    "image.tag": tag,
+    "image.repository": imageRepository
+  } = helm.values.source;
+
   const dockerOptions: DockerBuildOptions = {
-    tag: `${image.repository}:${tag}`
+    tag: `${imageRepository}:${tag}`
   };
+
   const options = {
     ..._options,
     ...dockerOptions
   };
   delete options.config;
+
   printConfig(config);
 
   try {

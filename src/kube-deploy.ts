@@ -92,6 +92,8 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
     __values: config.values
   };
 
+  console.log(options);
+
   const cwd = process.cwd();
   const { basePath, chart: _chart, values: _values } = options;
   options.chart = path.resolve(cwd, basePath, _chart);
