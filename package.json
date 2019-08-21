@@ -21,7 +21,8 @@
   ],
   "bin": {
     "kube-build": "./cli/kube-build",
-    "kube-deploy": "./cli/kube-deploy"
+    "kube-deploy": "./cli/kube-deploy",
+    "kube-push": "./cli/kube-push"
   },
   "scripts": {
     "start": "webpack --watch",

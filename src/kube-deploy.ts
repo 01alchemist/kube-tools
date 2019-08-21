@@ -1,7 +1,11 @@
 const path = require("path");
+const fs = require("fs-extra");
 const chalk = require("chalk");
+const yaml = require("js-yaml");
 import { launch } from "@01/launcher";
 import { loadConfig } from "./config";
+
+const cwd = process.cwd();
 
 type HemlUpgradeOptions = {
   name: string;
@@ -27,44 +31,59 @@ const helm = (
 
 const { white, red, blue, bgRed: bgRed } = chalk;
 
+type ImageConfig = {};
+type HelmConfig = {
+  chartFile?: string;
+  valuesFile?: string;
+  chart?: any;
+  values?: any;
+};
+type HelmManifests = {
+  output: string;
+  chart: any;
+  values: any;
+  templates: any;
+};
+
 type KubeDeployOptions = {
-  chart?: string;
   values?: string; // Path to values.yml
   config?: string;
   name?: string;
   context?: string;
-  "image.tag"?: string;
+  image?: ImageConfig;
+  helm?: HelmConfig;
   basePath?: string;
   dryRun?: boolean;
-  __values?: any; //Actual values of values.yml
 };
 
 const defaultOptions = {
-  chart: "",
   name: "",
-  "image.tag": "",
   basePath: ".",
   dryRun: false,
+  image: {},
+  helm: {},
   context: process.env.KUBE_CONTEXT || ""
 };
 
 function printConfig({
   name,
-  chart,
-  values,
-  "image.tag": imageTag,
-  __values: { env, replicas, image }
+  env,
+  helm: {
+    chartFile,
+    valuesFile,
+    values: { image, replicas }
+  }
 }: any) {
   console.log(`    ⚙️  Deployment Configuration
       
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
-      💿 Image tag              : ${imageTag}
+      💿 Image tag              : ${image.tag}
       💿 Image repository       : ${image.repository}
       💿 Image pullPolicy       : ${image.pullPolicy}
       👾 Replicas               : ${replicas}
-      📋 Chart                  : ${chart}
-      📝 Values                 : ${values}
+      📋 Chart                  : ${chartFile}
+      📝 Values                 : ${valuesFile}
   `);
 }
 
@@ -79,22 +98,47 @@ Oops 😬, Did you forgot to pass option ${bgRed(
     )
   );
 
+const saveYaml = (_path: string, data: any) => {
+  console.log("saveYaml: ", data);
+  try {
+    fs.outputFileSync(path.resolve(cwd, _path), yaml.safeDump(data));
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+function generateHelmManifests(manifests: HelmManifests) {
+  const {
+    output,
+    chart,
+    values,
+    templates: { deployment, service }
+  } = manifests;
+  fs.mkdirpSync(output);
+  saveYaml(output + "/chart/Chart.yaml", chart);
+  saveYaml(output + "/chart/values.yaml", values);
+  saveYaml(output + "/templates/deployment.yaml", deployment);
+  saveYaml(output + "/templates/service.yaml", service);
+}
+
 export async function kubeDeploy(_options: KubeDeployOptions = {}) {
-  let config = { app: {}, basePath: ".", values: {} };
+  let config: any = { app: {}, basePath: ".", values: {} };
   if (_options.config) {
     config = loadConfig(_options.config);
   }
+  // console.log(config);
+
   let options: KubeDeployOptions = {
     ...defaultOptions,
     ...config.app,
     ..._options,
-    basePath: config.basePath,
-    __values: config.values
+    basePath: config.basePath
   };
 
-  console.log(options);
+  console.log(options.helm);
 
-  const cwd = process.cwd();
+  generateHelmManifests(config.app.helm);
+
   const { basePath, chart: _chart, values: _values } = options;
   options.chart = path.resolve(cwd, basePath, _chart);
   options.values = path.resolve(cwd, basePath, _values);

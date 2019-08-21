@@ -19,9 +19,7 @@ function printConfig({
   env,
   app: {
     name,
-    helm: {
-      values: { source: values }
-    }
+    helm: { values }
   }
 }: any) {
   console.log(`    ⚙️  Build Configuration
@@ -56,12 +54,9 @@ export async function kubeBuild(_options: KubeBuildOptions) {
   if (_options.config) {
     config = loadConfig(_options.config);
   }
-
   const { helm } = config.app;
-  const {
-    "image.tag": tag,
-    "image.repository": imageRepository
-  } = helm.values.source;
+
+  const { "image.tag": tag, "image.repository": imageRepository } = helm.values;
 
   const dockerOptions: DockerBuildOptions = {
     tag: `${imageRepository}:${tag}`
