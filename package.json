@@ -41,7 +41,7 @@
     ]
   },
   "dependencies": {
-    "sls-yaml": "1.0.12",
+    "sls-yaml": "1.0.15",
     "minimist": "1.2.0",
     "source-map-support": "^0.5.12",
     "core-js": "3.1.4",

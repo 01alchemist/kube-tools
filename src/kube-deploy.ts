@@ -251,9 +251,13 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
 
   try {
     if (options.redeploy) {
-      await launch({
-        cmds: ["helm", "del", "--purge", serviceName]
-      });
+      try {
+        await launch({
+          cmds: ["helm", "del", "--purge", serviceName]
+        });
+      } catch (e) {
+        // ignore
+      }
     }
 
     await launch({
