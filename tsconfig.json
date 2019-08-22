@@ -23,7 +23,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "*": ["src/*", "node_modules/*"]
+      "~/*": ["src/*"]
     },
     "jsx": "react",
     "esModuleInterop": true

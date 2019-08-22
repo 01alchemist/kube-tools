@@ -4,37 +4,43 @@ const chalk = require("chalk");
 const yaml = require("js-yaml");
 import { launch } from "@01/launcher";
 import { loadConfig } from "./config";
+import { readYamlSync } from "sls-yaml";
+import { mergeObjects } from "./components/obj/merge-obj";
 
 const cwd = process.cwd();
+
+type HelmValue = { name: string; value: string };
 
 type HemlUpgradeOptions = {
   name: string;
   chart: string;
   values?: string;
-  imageTag: string;
+  valuesOverrides: HelmValue[];
   dryRun?: boolean;
 };
 
+const helmValueSets = (values: HelmValue[]) =>
+  values.map(({ name, value }) => [`--set`, `${name}=${value}`]).flat();
+
 // prettier-ignore
 const helm = (
-  {name, imageTag, chart, values, dryRun = false}:HemlUpgradeOptions
+  {name, chart, values, valuesOverrides, dryRun = false}:HemlUpgradeOptions
   ) => [
   "helm",
   "upgrade",                            // Upgrade service
   ...(dryRun?["--dry-run"]:[]),         // Simulate an upgrade
   "--install",                          // Install if service not exist
   ...(values?["--values", values]:[]),  // helm chart values.yml
-  "--set", `image.tag=${imageTag}`,     // image.tag=${CIRCLE_SHA1}
+  ...helmValueSets(valuesOverrides),    // helm values overrides
   name,                                 // Release name
   chart                                 // helm chart
 ];
 
 const { white, red, blue, bgRed: bgRed } = chalk;
 
-type ImageConfig = {};
 type HelmConfig = {
-  chartFile?: string;
-  valuesFile?: string;
+  chartFile: string;
+  valuesFile: string;
   chart?: any;
   values?: any;
 };
@@ -46,13 +52,14 @@ type HelmManifests = {
 };
 
 type KubeDeployOptions = {
+  chart?: string; // Path to Chart.yml
   values?: string; // Path to values.yml
   config?: string;
   name?: string;
   context?: string;
-  image?: ImageConfig;
   helm?: HelmConfig;
-  basePath?: string;
+  set: string[]; // helm values override arg
+  basePath: string;
   dryRun?: boolean;
 };
 
@@ -60,8 +67,7 @@ const defaultOptions = {
   name: "",
   basePath: ".",
   dryRun: false,
-  image: {},
-  helm: {},
+  set: [],
   context: process.env.KUBE_CONTEXT || ""
 };
 
@@ -99,7 +105,6 @@ Oops 😬, Did you forgot to pass option ${bgRed(
   );
 
 const saveYaml = (_path: string, data: any) => {
-  console.log("saveYaml: ", data);
   try {
     fs.outputFileSync(path.resolve(cwd, _path), yaml.safeDump(data));
   } catch (e) {
@@ -107,57 +112,92 @@ const saveYaml = (_path: string, data: any) => {
   }
 };
 
-function generateHelmManifests(manifests: HelmManifests) {
-  const {
-    output,
-    chart,
-    values,
-    templates: { deployment, service }
-  } = manifests;
-  fs.mkdirpSync(output);
-  saveYaml(output + "/chart/Chart.yaml", chart);
-  saveYaml(output + "/chart/values.yaml", values);
-  saveYaml(output + "/templates/deployment.yaml", deployment);
-  saveYaml(output + "/templates/service.yaml", service);
+function generateHelmManifests(
+  manifests: HelmManifests,
+  basePath: string
+): HelmConfig | null {
+  if (manifests) {
+    const { output, chart, values, templates } = manifests;
+    const buildDir = path.resolve(basePath, output);
+    fs.mkdirpSync(buildDir);
+
+    // Generate Chart and values
+    const chartFile = buildDir + "/chart/Chart.yaml";
+    saveYaml(chartFile, chart);
+    const valuesFile = buildDir + "/chart/values.yaml";
+    saveYaml(valuesFile, values);
+
+    // Generate templates
+    Object.keys(templates).forEach(name => {
+      const template = templates[name];
+      saveYaml(buildDir + `/templates/${name}.yaml`, template);
+    });
+    return {
+      chartFile,
+      valuesFile,
+      chart,
+      values
+    };
+  }
+  return null;
 }
 
-export async function kubeDeploy(_options: KubeDeployOptions = {}) {
-  let config: any = { app: {}, basePath: ".", values: {} };
+export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
+  let config: any = { app: {}, basePath: _options.basePath, values: {} };
   if (_options.config) {
     config = loadConfig(_options.config);
   }
-  // console.log(config);
+  // console.log(config.app);
 
   let options: KubeDeployOptions = {
     ...defaultOptions,
     ...config.app,
     ..._options,
-    basePath: config.basePath
+    basePath: config.basePath || _options.basePath
   };
+  const valuesOverrides: HelmValue[] = options.set.map(setValue => {
+    const [name, value] = setValue.split("=");
+    return { name, value };
+  });
+  // console.log(options.helm);
 
-  console.log(options.helm);
+  const helmConfig = generateHelmManifests(config.app.helm, options.basePath);
+  let { chart: chartFile, values: valuesFile } = options;
+  let values: any = {};
+  let chart: any = {};
 
-  generateHelmManifests(config.app.helm);
+  if (helmConfig) {
+    chartFile = helmConfig.chartFile;
+    valuesFile = helmConfig.valuesFile;
+    chart = helmConfig.chart;
+    values = helmConfig.values;
+  } else {
+    if (chartFile) {
+      chart = readYamlSync(chartFile);
+    }
+    if (valuesFile) {
+      values = readYamlSync(valuesFile);
+    }
+  }
+  values = mergeObjects(values, valuesOverrides);
+  const serviceName = chart.name;
+  const image = values.image;
+  const { dryRun } = options;
+  console.log("check #1 passed");
 
-  const { basePath, chart: _chart, values: _values } = options;
-  options.chart = path.resolve(cwd, basePath, _chart);
-  options.values = path.resolve(cwd, basePath, _values);
-
-  const { chart, name, "image.tag": imageTag, values, dryRun } = options;
-
-  if (!name) {
+  if (!serviceName) {
     logError(" service ", "which service you want to deploy!");
     process.exit(1);
     return;
   }
 
-  if (!imageTag) {
+  if (!image.tag) {
     logError(" image.tag ", "which image tag you want to deploy");
     process.exit(1);
     return;
   }
 
-  if (!chart) {
+  if (!chartFile) {
     logError(" chart ", "which chart you want to deploy!");
     process.exit(1);
     return;
@@ -181,15 +221,15 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
   });
   const serviceList = services.split("\n");
 
-  if (serviceList.includes(name)) {
+  if (serviceList.includes(serviceName)) {
     console.log(
       blue(`
-    🧩  Upgrading ${name} ...
+    🧩  Upgrading ${serviceName} ...
     `)
     );
   } else {
     console.log(`
-    🧩  Installing ${name} ...
+    🧩  Installing ${serviceName} ...
     `);
   }
 
@@ -198,11 +238,11 @@ export async function kubeDeploy(_options: KubeDeployOptions = {}) {
   try {
     await launch({
       cmds: helm({
-        name,
-        chart,
-        imageTag,
-        values,
-        dryRun
+        name: serviceName,
+        dryRun,
+        valuesOverrides,
+        chart: chartFile,
+        values: valuesFile
       })
     });
 
