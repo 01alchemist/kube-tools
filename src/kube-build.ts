@@ -19,15 +19,19 @@ function printConfig({
   env,
   app: {
     name,
-    helm: { values }
+    helm: {
+      values: {
+        image: { tag, repository }
+      }
+    }
   }
 }: any) {
   console.log(`    ⚙️  Build Configuration
 
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
-      💿 Image tag              : ${values["image.tag"]}
-      💿 Image repository       : ${values["image.repository"]}
+      💿 Image tag              : ${tag}
+      💿 Image repository       : ${repository}
   `);
 }
 
@@ -56,7 +60,9 @@ export async function kubeBuild(_options: KubeBuildOptions) {
   }
   const { helm } = config.app;
 
-  const { "image.tag": tag, "image.repository": imageRepository } = helm.values;
+  const {
+    image: { tag, repository: imageRepository }
+  } = helm.values;
 
   const dockerOptions: DockerBuildOptions = {
     tag: `${imageRepository}:${tag}`
