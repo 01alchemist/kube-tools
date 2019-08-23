@@ -1,6 +1,7 @@
 const chalk = require("chalk");
+import { launch } from "@01/launcher";
 import { loadConfig } from "./config";
-import { DockerBuildOptions, dockerBuild } from "./components/docker";
+import { DockerPushOptions, dockerPush } from "./components/docker";
 
 const { white, red, bgRed: bgRed } = chalk;
 
@@ -10,13 +11,15 @@ type KubeConfig = {
   values: any;
 };
 
-type KubeBuildOptions = {
+type KubePushOptions = {
+  "extra-tags": string;
   config: string;
   basePath?: string;
-} & DockerBuildOptions;
+} & DockerPushOptions;
 
 function printConfig({
   env,
+  tags,
   app: {
     name,
     helm: {
@@ -30,7 +33,7 @@ function printConfig({
 
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
-      💿 Image tag              : ${tag}
+      💿 Image tags             : ${tags}
       💿 Image repository       : ${repository}
   `);
 }
@@ -46,7 +49,7 @@ Oops 😬, Did you forgot to pass option ${bgRed(
     )
   );
 
-export async function kubeBuild(_options: KubeBuildOptions) {
+export async function kubePush(_options: KubePushOptions) {
   let config: KubeConfig = { app: {}, basePath: ".", values: {} };
 
   if (!_options.config) {
@@ -61,11 +64,14 @@ export async function kubeBuild(_options: KubeBuildOptions) {
   const { helm } = config.app;
 
   const {
-    image: { tag, repository: imageRepository }
+    image: { tag: sourceTag, repository: imageRepository }
   } = helm.values;
 
-  const dockerOptions: DockerBuildOptions = {
-    tag: `${imageRepository}:${tag}`
+  const { "extra-tags": _extraTags = "" } = _options;
+  const extraTags: string[] = _extraTags.split(",");
+  const tags = [sourceTag, ...extraTags];
+  const dockerOptions: DockerPushOptions = {
+    tags: tags.map(tag => `${imageRepository}:${tag}`)
   };
 
   const options = {
@@ -74,10 +80,32 @@ export async function kubeBuild(_options: KubeBuildOptions) {
   };
   delete options.config;
 
-  printConfig(config);
+  printConfig({ ...config, tags });
 
   try {
-    await dockerBuild(options);
+    // Retags extra tags
+    const promises = extraTags.map(tag => {
+      return launch({
+        cmds: [
+          "docker",
+          "tag",
+          `${imageRepository}:${sourceTag}`,
+          `${imageRepository}:${tag}`
+        ],
+        silent: true
+      });
+    });
+    await Promise.all(promises);
+
+    console.info(
+      `############################################################`
+    );
+    console.info(`# Pushing image tags [${tags}]`);
+    console.info(
+      `############################################################`
+    );
+
+    await dockerPush(options, { silent: true });
     return 0;
   } catch (e) {
     console.error(e);

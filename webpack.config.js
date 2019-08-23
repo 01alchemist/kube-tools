@@ -5,6 +5,7 @@ const nodeExternals = require("webpack-node-externals");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const PrettierPlugin = require("prettier-webpack-plugin");
 const pkg = require("./package.json");
+const tsConfig = require("./tsconfig.json");
 
 const mode =
   process.env.NODE_ENV === "production" ? "production" : "development";
@@ -37,6 +38,29 @@ const buildNum = () => {
   return "-(local)";
 };
 
+// Make ts path resolvers for webpack
+const { baseUrl } = tsConfig.compilerOptions;
+const tsPaths = tsConfig.compilerOptions.paths;
+const resolvedTsPaths = {};
+Object.keys(tsPaths).forEach(pathName => {
+  const [tsPath] = tsPaths[pathName];
+  let cleanPathName = pathName.replace(/\*/gi, "");
+  cleanPathName =
+    cleanPathName[cleanPathName.length - 1] === "/"
+      ? cleanPathName.substring(0, cleanPathName.length - 1)
+      : cleanPathName;
+  const resolvedPath = path.resolve(
+    __dirname,
+    baseUrl,
+    tsPath.replace(/\*/gi, "")
+  );
+  resolvedTsPaths[cleanPathName] = resolvedPath;
+});
+
+console.info("TypeScript resolved paths");
+console.info("👇");
+console.info(resolvedTsPaths);
+
 module.exports = {
   target: "node",
   mode,
@@ -62,7 +86,9 @@ module.exports = {
   },
   resolve: {
     extensions: [".ts", ".js"],
-    alias: {}
+    alias: {
+      ...resolvedTsPaths
+    }
   },
   plugins: [
     ...(isDevMode ? [] : [new CleanWebpackPlugin()]),
@@ -79,7 +105,10 @@ module.exports = {
       {
         test: /\.tsx?$/,
         loader: "ts-loader",
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        options: {
+          transpileOnly: true
+        }
       }
     ]
   },
