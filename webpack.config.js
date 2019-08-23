@@ -57,9 +57,9 @@ Object.keys(tsPaths).forEach(pathName => {
   resolvedTsPaths[cleanPathName] = resolvedPath;
 });
 
-console.log("TypeScript resolved paths");
-console.log("👇");
-console.log(resolvedTsPaths);
+console.info("TypeScript resolved paths");
+console.info("👇");
+console.info(resolvedTsPaths);
 
 module.exports = {
   target: "node",

@@ -83,7 +83,7 @@ function printConfig({
     values: { image, replicas }
   }
 }: any) {
-  console.log(`    ⚙️  Deployment Configuration
+  console.info(`    ⚙️  Deployment Configuration
       
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
@@ -97,7 +97,7 @@ function printConfig({
 }
 
 const logError = (prop: string, msg: string) =>
-  console.log(
+  console.error(
     red(
       `
 Oops 😬, Did you forgot to pass option ${bgRed(
@@ -107,9 +107,10 @@ Oops 😬, Did you forgot to pass option ${bgRed(
     )
   );
 
-const saveYaml = (_path: string, data: any) => {
+const saveJsonAsYaml = (_path: string, data: any) => {
   try {
-    fs.outputFileSync(path.resolve(cwd, _path), yaml.safeDump(data));
+    const yamlData = yaml.safeDump(data);
+    fs.outputFileSync(path.resolve(cwd, _path), yamlData);
   } catch (e) {
     console.error(e);
   }
@@ -127,14 +128,15 @@ function generateHelmManifests(
 
     // Generate Chart and values
     const chartFile = chartDir + "/Chart.yaml";
-    saveYaml(chartFile, chart);
+    saveJsonAsYaml(chartFile, chart);
     const valuesFile = chartDir + "/values.yaml";
-    saveYaml(valuesFile, values);
+    saveJsonAsYaml(valuesFile, values);
 
-    // Generate templates
+    // Generate templates yaml
     Object.keys(templates).forEach(name => {
       const template = templates[name];
-      saveYaml(chartDir + `/templates/${name}.yaml`, template);
+      const _path = chartDir + `/templates/${name}.yaml`;
+      fs.outputFileSync(path.resolve(cwd, _path), template);
     });
     return {
       chartDir,
@@ -235,18 +237,17 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
   const serviceList = services.split("\n");
 
   if (serviceList.includes(serviceName)) {
-    console.log(
+    console.info(
       blue(`
     🧩  Upgrading ${serviceName} ...
     `)
     );
   } else {
-    console.log(`
+    console.info(`
     🧩  Installing ${serviceName} ...
     `);
   }
 
-  console.log(options);
   printConfig(options);
 
   try {

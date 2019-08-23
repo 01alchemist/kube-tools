@@ -26,7 +26,7 @@ function printConfig({
     }
   }
 }: any) {
-  console.log(`    ⚙️  Build Configuration
+  console.info(`    ⚙️  Build Configuration
 
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
@@ -36,7 +36,7 @@ function printConfig({
 }
 
 const logError = (prop: string, msg: string) =>
-  console.log(
+  console.error(
     red(
       `
 Oops 😬, Did you forgot to pass option ${bgRed(

@@ -22,20 +22,24 @@ function printConfig({
   tags,
   app: {
     name,
-    helm: { values }
+    helm: {
+      values: {
+        image: { tag, repository }
+      }
+    }
   }
 }: any) {
-  console.log(`    ⚙️  Build Configuration
+  console.info(`    ⚙️  Build Configuration
 
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
       💿 Image tags             : ${tags}
-      💿 Image repository       : ${values["image.repository"]}
+      💿 Image repository       : ${repository}
   `);
 }
 
 const logError = (prop: string, msg: string) =>
-  console.log(
+  console.error(
     red(
       `
 Oops 😬, Did you forgot to pass option ${bgRed(
@@ -60,13 +64,11 @@ export async function kubePush(_options: KubePushOptions) {
   const { helm } = config.app;
 
   const {
-    "image.tag": sourceTag,
-    "image.repository": imageRepository
+    image: { tag: sourceTag, repository: imageRepository }
   } = helm.values;
-  console.log(_options);
 
   const { "extra-tags": _extraTags = "" } = _options;
-  const extraTags = _extraTags.split(",");
+  const extraTags: string[] = _extraTags.split(",");
   const tags = [sourceTag, ...extraTags];
   const dockerOptions: DockerPushOptions = {
     tags: tags.map(tag => `${imageRepository}:${tag}`)
@@ -95,9 +97,13 @@ export async function kubePush(_options: KubePushOptions) {
     });
     await Promise.all(promises);
 
-    console.log(`############################################################`);
-    console.log(`# Pushing image tags [${tags}]`);
-    console.log(`############################################################`);
+    console.info(
+      `############################################################`
+    );
+    console.info(`# Pushing image tags [${tags}]`);
+    console.info(
+      `############################################################`
+    );
 
     await dockerPush(options, { silent: true });
     return 0;

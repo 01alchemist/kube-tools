@@ -11,7 +11,9 @@ export function loadConfig(path: string) {
     const valuesSource = doc.app.helm.values;
     if (valuesSource && Array.isArray(valuesSource)) {
       const values = valuesSource.reduce((acc, item) => {
-        acc = mergeObjects(acc, item);
+        if (item) {
+          acc = mergeObjects(acc, item);
+        }
         return acc;
       }, {});
       delete doc.values;
@@ -22,7 +24,9 @@ export function loadConfig(path: string) {
     const chartSource = doc.app.helm.chart;
     if (chartSource && Array.isArray(chartSource)) {
       const chart = chartSource.reduce((acc, item) => {
-        acc = mergeObjects(acc, item);
+        if (item) {
+          acc = mergeObjects(acc, item);
+        }
         return acc;
       }, {});
       doc.app.helm.chart = chart;
@@ -31,6 +35,6 @@ export function loadConfig(path: string) {
     doc.basePath = basePath;
     return doc;
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 }
