@@ -1,6 +1,6 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
