@@ -1,4 +1,4 @@
-import { ArgMap } from "common/types";
+import { ArgMap } from "~/common/types";
 import { spreadArgs } from "./docker-args";
 import { launch } from "@01/launcher";
 import { dockerBuild } from "./docker-build";

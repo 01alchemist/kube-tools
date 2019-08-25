@@ -1,5 +1,5 @@
 import { launch } from "@01/launcher";
-import { ArgMap } from "common/types";
+import { ArgMap } from "~/common/types";
 
 export type DockerPushOptions = {
   tag?: string;

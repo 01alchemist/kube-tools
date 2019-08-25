@@ -1,4 +1,4 @@
-import { ArgMap } from "common/types";
+import { ArgMap } from "~/common/types";
 
 /**
  * Spread args object to command line arguments
