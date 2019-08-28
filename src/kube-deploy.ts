@@ -116,6 +116,23 @@ const saveJsonAsYaml = (_path: string, data: any) => {
   }
 };
 
+const copyTemplatesToBuildDir = (_path: string) => {
+  const files = fs.readdirSync(_path);
+  files.forEach((file: string) => {
+    console.log("file:", file);
+  });
+};
+
+const copyYamlToBuildDir = (_path: string, source: any) => {
+  try {
+    const data = readYamlSync(path.resolve(cwd, source));
+    const yamlData = yaml.safeDump(data);
+    fs.outputFileSync(path.resolve(cwd, _path), yamlData);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 function generateHelmManifests(
   manifests: HelmManifests,
   basePath: string
@@ -128,16 +145,29 @@ function generateHelmManifests(
 
     // Generate Chart and values
     const chartFile = chartDir + "/Chart.yaml";
-    saveJsonAsYaml(chartFile, chart);
+    if (typeof chart === "string") {
+      copyYamlToBuildDir(chartFile, chart);
+      // Copy templates yaml
+      copyTemplatesToBuildDir(chart.substring(0, chart.lastIndexOf("/")));
+    } else {
+      saveJsonAsYaml(chartFile, chart);
+    }
+
     const valuesFile = chartDir + "/values.yaml";
-    saveJsonAsYaml(valuesFile, values);
+    if (typeof values === "string") {
+      copyYamlToBuildDir(valuesFile, values);
+    } else {
+      saveJsonAsYaml(valuesFile, values);
+    }
 
     // Generate templates yaml
-    Object.keys(templates).forEach(name => {
-      const template = templates[name];
-      const _path = chartDir + `/templates/${name}.yaml`;
-      fs.outputFileSync(path.resolve(cwd, _path), template);
-    });
+    if (templates) {
+      Object.keys(templates).forEach(name => {
+        const template = templates[name];
+        const _path = chartDir + `/templates/${name}.yaml`;
+        fs.outputFileSync(path.resolve(cwd, _path), template);
+      });
+    }
     return {
       chartDir,
       chartFile,
@@ -150,6 +180,7 @@ function generateHelmManifests(
 }
 
 export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
+  console.log("Check #1");
   let config: any = { app: {}, basePath: _options.basePath, values: {} };
   if (_options.config) {
     config = loadConfig(_options.config);
@@ -160,6 +191,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
     const [name, value] = setValue.split("=");
     return { name, value };
   });
+  console.log("Check #2");
 
   const helmConfig = generateHelmManifests(config.app.helm, basePath);
   let { chart: chartDir = "./helm", values: valuesFile } = _options;

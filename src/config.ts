@@ -5,7 +5,10 @@ import { mergeObjects } from "./components/obj/merge-obj";
 export function loadConfig(path: string) {
   try {
     const basePath = path.substring(0, path.lastIndexOf("/"));
+    console.log(path);
+
     const doc = readYamlSync(path);
+    console.log("Check #1.2");
 
     // Merge helm values and chart
     const valuesSource = doc.app.helm.values;
