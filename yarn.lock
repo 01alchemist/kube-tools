@@ -4351,10 +4351,10 @@ slash@^2.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-2.0.0.tgz#de552851a1759df3a8f206535442f5ec4ddeab44"
   integrity sha512-ZYKh3Wh2z1PpEXWr0MpSBZ0V6mZHAQfYevttO11c51CaWjGTaadiKZ+wVt1PbMlDV5qhMFslpZCemhwOK7C89A==
 
-sls-yaml@1.0.26:
-  version "1.0.26"
-  resolved "https://registry.yarnpkg.com/sls-yaml/-/sls-yaml-1.0.26.tgz#489f8aecb7bbaef53f4be8ae1f05f28b82369086"
-  integrity sha512-/5cV2SPhxFgPs9eT+LidTECUxV72w6iS302Q7FzjMnOyI+vCt06OaEFMtHQd0nFQjqlmwE53GcbHutoZDhECzQ==
+sls-yaml@1.0.28:
+  version "1.0.28"
+  resolved "https://registry.yarnpkg.com/sls-yaml/-/sls-yaml-1.0.28.tgz#04687eabd822bd665aefd0586e09ce5379083ab8"
+  integrity sha512-5J6kcWmq0QSzl4j+Jb/UiSaX/Q8M/noQCOo3gLBzXFK3+CdcdB+JhrB9r7lCo8gJPO0+m5phbAL+pmA5Od0tLA==
   dependencies:
     js-yaml "3.13.1"
     lodash.get "^4.4.2"

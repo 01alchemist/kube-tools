@@ -78,6 +78,7 @@ function printConfig({
   name,
   env,
   helm: {
+    release,
     chartFile,
     valuesFile,
     values: { image, replicas }
@@ -85,6 +86,7 @@ function printConfig({
 }: any) {
   console.info(`    ⚙️  Deployment Configuration
       
+      🚀 Release name           : ${release}
       📦 Service name           : ${name}
       🌍 Environment            : ${env}
       💿 Image tag              : ${image.tag}
@@ -116,18 +118,20 @@ const saveJsonAsYaml = (_path: string, data: any) => {
   }
 };
 
-const copyTemplatesToBuildDir = (_path: string) => {
+const copyTemplatesToBuildDir = (_path: string, buildDir: string) => {
   const files = fs.readdirSync(_path);
   files.forEach((file: string) => {
     console.log("file:", file);
+    const name = file.substring(file.lastIndexOf("/"), file.length);
+    fs.copySync(file, path.resolve(buildDir, name));
   });
 };
 
-const copyYamlToBuildDir = (_path: string, source: any) => {
+const copyYamlToBuildDir = (source: any, destination: string) => {
   try {
     const data = readYamlSync(path.resolve(cwd, source));
     const yamlData = yaml.safeDump(data);
-    fs.outputFileSync(path.resolve(cwd, _path), yamlData);
+    fs.outputFileSync(path.resolve(cwd, destination), yamlData);
   } catch (e) {
     console.error(e);
   }
@@ -146,9 +150,12 @@ function generateHelmManifests(
     // Generate Chart and values
     const chartFile = chartDir + "/Chart.yaml";
     if (typeof chart === "string") {
-      copyYamlToBuildDir(chartFile, chart);
+      copyYamlToBuildDir(chart, chartFile);
       // Copy templates yaml
-      copyTemplatesToBuildDir(chart.substring(0, chart.lastIndexOf("/")));
+      copyTemplatesToBuildDir(
+        path.resolve(chart.substring(0, chart.lastIndexOf("/")), "templates"),
+        path.resolve(chartDir, "templates")
+      );
     } else {
       saveJsonAsYaml(chartFile, chart);
     }
@@ -214,7 +221,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
     }
   }
   values = mergeObjects(values, valuesOverrides);
-  const serviceName = chart.name;
+  const releaseName = config.app.helm.release;
   const image = values.image;
   const { dryRun } = _options;
 
@@ -225,6 +232,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
     basePath,
     env: config.env,
     helm: {
+      release: releaseName,
       chartFile,
       valuesFile,
       chart,
@@ -232,8 +240,8 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
     }
   };
 
-  if (!serviceName) {
-    logError(" service ", "which service you want to deploy!");
+  if (!releaseName) {
+    logError(" release ", "please name the release you want to deploy!");
     process.exit(1);
     return;
   }
@@ -268,15 +276,15 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
   });
   const serviceList = services.split("\n");
 
-  if (serviceList.includes(serviceName)) {
+  if (serviceList.includes(releaseName)) {
     console.info(
       blue(`
-    🧩  Upgrading ${serviceName} ...
+    🧩  Upgrading ${releaseName} ...
     `)
     );
   } else {
     console.info(`
-    🧩  Installing ${serviceName} ...
+    🧩  Installing ${releaseName} ...
     `);
   }
 
@@ -286,7 +294,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
     if (options.redeploy) {
       try {
         await launch({
-          cmds: ["helm", "del", "--purge", serviceName]
+          cmds: ["helm", "del", "--purge", releaseName]
         });
       } catch (e) {
         // ignore
@@ -295,7 +303,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
 
     await launch({
       cmds: helm({
-        name: serviceName,
+        name: releaseName,
         dryRun,
         valuesOverrides,
         chart: chartDir
