@@ -1,0 +1,15 @@
+{
+  "name": "service1",
+  "description": "service1 description",
+  "version": "1.2.3",
+  "port": 3000,
+  "dockerRepository": "01alchemist/service1",
+  "scripts": {
+    "start": "node index.js",
+    "build": "../../cli/kube-build --config=.kube/env/minikube.yml",
+    "deploy": "../../cli/kube-deploy --config=.kube/env/minikube.yml"
+  },
+  "dependencies": {
+    "express": "4.17.1"
+  }
+}
