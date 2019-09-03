@@ -1,7 +1,7 @@
 {
   "name": "service1",
   "description": "service1 description",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "port": 80,
   "dockerRepository": "01alchemist/service1",
   "scripts": {
