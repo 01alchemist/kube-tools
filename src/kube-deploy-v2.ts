@@ -115,7 +115,11 @@ function generateManifests(
       Object.keys(resources).forEach((name: string) => {
         const resource = resources[name];
         const _path = buildDir + `/resources/${name}.yaml`;
-        resourceFiles.push({ kind: resource.kind, path: _path });
+        resourceFiles.push({
+          kind: resource.kind,
+          name: resource.metadata.name,
+          path: _path
+        });
         fs.outputFileSync(path.resolve(cwd, _path), yaml.safeDump(resource));
       });
     }
@@ -206,9 +210,19 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
 
   if (serviceConfig) {
     try {
-      const promises = serviceConfig.resources.map(async resource => {
-        return kubectl(["apply", "-f", resource.path], { silent: true });
+      // Append resources
+      let promises = serviceConfig.resources.map(async resource => {
+        console.log(resource);
+        const source = await kubectl(
+          ["get", `${resource.kind}/${resource.name}`, "-o", "json"],
+          { silent: true }
+        );
+        console.log(source);
+        return source;
       });
+      // promises = serviceConfig.resources.map(async resource => {
+      //   return kubectl(["apply", "-f", resource.path], { silent: true });
+      // });
       await Promise.all(promises);
       return 0;
     } catch (e) {
