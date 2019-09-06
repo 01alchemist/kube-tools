@@ -1,5 +1,22 @@
-export function mergeObjects(object1: any, object2: any): any {
+type MergeOptions = {
+  skipDuplicates: boolean;
+};
+const defaultOptions = {
+  skipDuplicates: false
+};
+export function mergeObjects(
+  object1: any,
+  object2: any,
+  options: MergeOptions = defaultOptions
+): any {
   if (object1 && object2) {
+    if (Array.isArray(object1) && Array.isArray(object2)) {
+      let result = [...object1, ...object2];
+      if (options.skipDuplicates) {
+        result = Array.from(new Set(result));
+      }
+      return result;
+    }
     const result: any = {};
     const keys2 = Object.keys(object2);
     Object.keys(object1).forEach((key1: string) => {
@@ -8,8 +25,8 @@ export function mergeObjects(object1: any, object2: any): any {
       if (key2index > -1) {
         const [key2] = keys2.splice(key2index, 1);
         const obj2 = object2[key2];
-        if (typeof obj2 === "object" && !Array.isArray(obj2)) {
-          const mergedObj = mergeObjects(obj1, obj2);
+        if (typeof obj2 === "object") {
+          const mergedObj = mergeObjects(obj1, obj2, options);
           result[key1] = mergedObj;
         } else {
           result[key1] = obj2;

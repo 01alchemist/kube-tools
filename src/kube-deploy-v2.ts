@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const chalk = require("chalk");
 const yaml = require("js-yaml");
+const util = require("util");
 import get from "lodash.get";
 import { launch } from "@01/launcher";
 import { loadConfig } from "./config";
@@ -15,7 +16,7 @@ const { white, red, blue, bgRed: bgRed } = chalk;
 
 type ServiceConfig = {
   values: any;
-  resources: any[];
+  resourceFiles: any[];
   resourceDir: string;
 };
 
@@ -118,13 +119,14 @@ function generateManifests(
         resourceFiles.push({
           kind: resource.kind,
           name: resource.metadata.name,
-          path: _path
+          path: _path,
+          content: resource
         });
         fs.outputFileSync(path.resolve(cwd, _path), yaml.safeDump(resource));
       });
     }
     return {
-      resources: resourceFiles,
+      resourceFiles,
       resourceDir,
       values
     };
@@ -211,19 +213,44 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
   if (serviceConfig) {
     try {
       // Append resources
-      let promises = serviceConfig.resources.map(async resource => {
-        console.log(resource);
-        const source = await kubectl(
-          ["get", `${resource.kind}/${resource.name}`, "-o", "json"],
-          { silent: true }
-        );
-        console.log(source);
-        return source;
+      let promises = serviceConfig.resourceFiles.map(async resourceFile => {
+        try {
+          const source = await kubectl(
+            ["get", `${resourceFile.kind}/${resourceFile.name}`, "-o", "json"],
+            { silent: true }
+          );
+          if (
+            ["VirtualService", "DestinationRule"].indexOf(resourceFile.kind) >
+            -1
+          ) {
+            const existingResource = JSON.parse(source);
+            // Delete unwanted properties
+            delete existingResource.metadata.annotations;
+            delete existingResource.metadata.creationTimestamp;
+            delete existingResource.metadata.generation;
+            delete existingResource.metadata.resourceVersion;
+            delete existingResource.metadata.selfLink;
+            delete existingResource.metadata.uid;
+
+            const mergedResource = mergeObjects(
+              existingResource,
+              resourceFile.content,
+              { skipDuplicates: true }
+            );
+            fs.outputFileSync(resourceFile.path, yaml.safeDump(mergedResource));
+            return mergedResource;
+          }
+        } catch (e) {
+          return null;
+        }
       });
-      // promises = serviceConfig.resources.map(async resource => {
-      //   return kubectl(["apply", "-f", resource.path], { silent: true });
-      // });
       await Promise.all(promises);
+      promises = serviceConfig.resourceFiles.map(async resourceFile => {
+        return kubectl(["apply", "-f", resourceFile.path], {
+          silent: true,
+          stdio: "inherit"
+        });
+      });
       return 0;
     } catch (e) {
       console.error(e);
