@@ -9,7 +9,9 @@ export function loadConfig(path: string, overrideValues: any = {}) {
     console.log(path);
     let values: any;
     const doc = readYamlSync(path, null, {
-      merge: ([obj1, obj2]: any) => mergeObjects(obj1, obj2),
+      merge: ([obj1, obj2]: any) => {
+        return mergeObjects(obj1, obj2);
+      },
       values: ([key]: string[], { globalObj }: any) => {
         if (!values) {
           values = mergeObjects(globalObj.app.service.values, overrideValues);
