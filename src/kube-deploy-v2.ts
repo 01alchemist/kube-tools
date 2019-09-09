@@ -220,7 +220,9 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
             { silent: true }
           );
 
-          if (["VirtualService"].includes(resourceFile.kind)) {
+          if (
+            ["VirtualService", "DestinationRule"].includes(resourceFile.kind)
+          ) {
             const existingResource = JSON.parse(source);
             // Delete unwanted properties
             // delete existingResource.metadata.annotations;
@@ -235,23 +237,27 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
               { skipDuplicates: true }
             );
             // Filter duplicate entries
-            const hashes: string[] = [];
-            const http = mergedResource.spec.http.filter((entry: any) => {
-              const md5 = crypto
-                .createHash("md5")
-                .update(JSON.stringify(entry))
-                .digest("hex");
-              if (!hashes.includes(md5)) {
-                hashes.push(md5);
-                return true;
-              }
-              return false;
-            });
+            if (resourceFile.kind === "VirtualService") {
+              const hashes: string[] = [];
+              const http = mergedResource.spec.http.filter((entry: any) => {
+                const md5 = crypto
+                  .createHash("md5")
+                  .update(JSON.stringify(entry))
+                  .digest("hex");
+                if (!hashes.includes(md5)) {
+                  hashes.push(md5);
+                  return true;
+                }
+                return false;
+              });
 
-            console.log("http:", http);
-            mergedResource.spec.http = http;
-            fs.outputFileSync(resourceFile.path, yaml.safeDump(mergedResource));
-            return mergedResource;
+              mergedResource.spec.http = http;
+              fs.outputFileSync(
+                resourceFile.path,
+                yaml.safeDump(mergedResource)
+              );
+              return mergedResource;
+            }
           }
         } catch (e) {
           return null;
