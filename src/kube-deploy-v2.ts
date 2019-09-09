@@ -9,6 +9,7 @@ import { loadConfig } from "./config";
 import { readYamlSync } from "sls-yaml";
 import { mergeObjects } from "./components/obj/merge-obj";
 import { kubectl } from "./components/kubernetes";
+import { objectHash } from "./common/object-hash";
 
 const cwd = process.cwd();
 
@@ -224,13 +225,6 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
             ["VirtualService", "DestinationRule"].includes(resourceFile.kind)
           ) {
             const existingResource = JSON.parse(source);
-            // Delete unwanted properties
-            // delete existingResource.metadata.annotations;
-            // delete existingResource.metadata.creationTimestamp;
-            // delete existingResource.metadata.generation;
-            // delete existingResource.metadata.selfLink;
-            // delete existingResource.metadata.uid;
-
             const mergedResource = mergeObjects(
               existingResource,
               resourceFile.content,
@@ -240,24 +234,43 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
             if (resourceFile.kind === "VirtualService") {
               const hashes: string[] = [];
               const http = mergedResource.spec.http.filter((entry: any) => {
-                const md5 = crypto
-                  .createHash("md5")
-                  .update(JSON.stringify(entry))
-                  .digest("hex");
+                const md5 = objectHash(entry);
                 if (!hashes.includes(md5)) {
                   hashes.push(md5);
                   return true;
                 }
                 return false;
               });
-
               mergedResource.spec.http = http;
-              fs.outputFileSync(
-                resourceFile.path,
-                yaml.safeDump(mergedResource)
-              );
-              return mergedResource;
             }
+
+            if (resourceFile.kind === "DestinationRule") {
+              console.log(
+                "existingResource ---> ",
+                existingResource.spec.subsets
+              );
+              console.log(
+                "resourceFile.content ---> ",
+                resourceFile.content.spec.subsets
+              );
+
+              const hashes: string[] = [];
+              const subsets = mergedResource.spec.subsets.filter(
+                (entry: any) => {
+                  const md5 = objectHash(entry);
+                  if (!hashes.includes(md5)) {
+                    hashes.push(md5);
+                    return true;
+                  }
+                  return false;
+                }
+              );
+              mergedResource.spec.subsets = subsets;
+              console.log("mergedResource ---> ", mergedResource.spec.subsets);
+            }
+
+            fs.outputFileSync(resourceFile.path, yaml.safeDump(mergedResource));
+            return mergedResource;
           }
         } catch (e) {
           return null;
