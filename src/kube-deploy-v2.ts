@@ -225,12 +225,11 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
           ) {
             const existingResource = JSON.parse(source);
             // Delete unwanted properties
-            delete existingResource.metadata.annotations;
-            delete existingResource.metadata.creationTimestamp;
-            delete existingResource.metadata.generation;
-            delete existingResource.metadata.resourceVersion;
-            delete existingResource.metadata.selfLink;
-            delete existingResource.metadata.uid;
+            // delete existingResource.metadata.annotations;
+            // delete existingResource.metadata.creationTimestamp;
+            // delete existingResource.metadata.generation;
+            // delete existingResource.metadata.selfLink;
+            // delete existingResource.metadata.uid;
 
             const mergedResource = mergeObjects(
               existingResource,
@@ -251,6 +250,7 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
           stdio: "inherit"
         });
       });
+      await Promise.all(promises);
       return 0;
     } catch (e) {
       console.error(e);
