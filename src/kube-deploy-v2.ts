@@ -3,7 +3,7 @@ const fs = require("fs-extra");
 const chalk = require("chalk");
 const yaml = require("js-yaml");
 const util = require("util");
-import get from "lodash.get";
+const crypto = require("crypto");
 import { launch } from "@01/launcher";
 import { loadConfig } from "./config";
 import { readYamlSync } from "sls-yaml";
@@ -219,10 +219,8 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
             ["get", `${resourceFile.kind}/${resourceFile.name}`, "-o", "json"],
             { silent: true }
           );
-          if (
-            ["VirtualService", "DestinationRule"].indexOf(resourceFile.kind) >
-            -1
-          ) {
+
+          if (["VirtualService"].includes(resourceFile.kind)) {
             const existingResource = JSON.parse(source);
             // Delete unwanted properties
             // delete existingResource.metadata.annotations;
@@ -236,6 +234,22 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
               resourceFile.content,
               { skipDuplicates: true }
             );
+            // Filter duplicate entries
+            const hashes: string[] = [];
+            const http = mergedResource.spec.http.filter((entry: any) => {
+              const md5 = crypto
+                .createHash("md5")
+                .update(JSON.stringify(entry))
+                .digest("hex");
+              if (!hashes.includes(md5)) {
+                hashes.push(md5);
+                return true;
+              }
+              return false;
+            });
+
+            console.log("http:", http);
+            mergedResource.spec.http = http;
             fs.outputFileSync(resourceFile.path, yaml.safeDump(mergedResource));
             return mergedResource;
           }
