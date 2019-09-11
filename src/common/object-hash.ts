@@ -22,7 +22,7 @@ export function objectHash(obj: any) {
     .digest("hex");
 }
 export function arrayHash(array: any[]) {
-  const sortedHashMap = array.forEach(item => objectHash(item));
+  const sortedHashMap: string[] = array.map(item => objectHash(item));
   return crypto
     .createHash("md5")
     .update(JSON.stringify(sortedHashMap))

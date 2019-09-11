@@ -228,9 +228,9 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
             const mergedResource = mergeObjects(
               existingResource,
               resourceFile.content,
-              { skipDuplicates: true }
+              { skipDuplicates: true } // Skip duplicate primitive values
             );
-            // Filter duplicate entries
+            // Filter duplicate resources
             if (resourceFile.kind === "VirtualService") {
               const hashes: string[] = [];
               const http = mergedResource.spec.http.filter((entry: any) => {
@@ -245,15 +245,6 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
             }
 
             if (resourceFile.kind === "DestinationRule") {
-              console.log(
-                "existingResource ---> ",
-                existingResource.spec.subsets
-              );
-              console.log(
-                "resourceFile.content ---> ",
-                resourceFile.content.spec.subsets
-              );
-
               const hashes: string[] = [];
               const subsets = mergedResource.spec.subsets.filter(
                 (entry: any) => {
@@ -266,13 +257,13 @@ export async function kubeDeploy(_options: KubeDeployOptions = defaultOptions) {
                 }
               );
               mergedResource.spec.subsets = subsets;
-              console.log("mergedResource ---> ", mergedResource.spec.subsets);
             }
 
             fs.outputFileSync(resourceFile.path, yaml.safeDump(mergedResource));
             return mergedResource;
           }
         } catch (e) {
+          console.error(e);
           return null;
         }
       });
