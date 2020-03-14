@@ -1,6 +1,6 @@
 {
   "name": "@01/kube-tools",
-  "version": "1.0.19",
+  "version": "2.0.0-alpha",
   "author": "Nidin Vinayakan <01@01alchemist.com>",
   "repository": "git@github.com:01alchemist/kube-tools.git",
   "private": false,
@@ -28,10 +28,10 @@
     "start": "webpack --watch",
     "build.dev": "webpack",
     "build": "NODE_ENV=production webpack",
+    "watch": "NODE_ENV=development webpack --watch",
     "prepublish": "yarn build",
     "precommit": "lint-staged",
     "test": "jest --config=jest.json",
-    
     "prettier": "prettier --write '**/*.{js,json,ts,gql,graphql}'",
     "lint": "prettier --check '**/*.{js,json,ts,gql,graphql}'"
   },

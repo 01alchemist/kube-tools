@@ -1,5 +1,5 @@
-kubectl delete --all all
-kubectl delete --all serviceaccount
-kubectl delete --all virtualservice
-kubectl delete --all destinationrule
-kubectl delete --all gateway
+kubectl delete all --all -n default
+kubectl delete virtualservice --all -n default
+kubectl delete destinationrule --all -n default
+kubectl delete gateway --all -n default
+kubectl delete serviceaccount --all -n default

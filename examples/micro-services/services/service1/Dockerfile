@@ -1,7 +1,8 @@
 FROM node:12
 
 # Build variables
-ENV PORT=3000
+ARG PORT
+ENV PORT ${PORT:-3000} 
 
 WORKDIR /app
 
@@ -15,5 +16,6 @@ COPY . ./
 RUN yarn install
 
 EXPOSE ${PORT}
+RUN echo Exposed port=$PORT
 
 CMD [ "npm", "start" ]

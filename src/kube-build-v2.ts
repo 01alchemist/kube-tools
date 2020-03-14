@@ -1,4 +1,4 @@
-const chalk = require("chalk");
+import chalk from "chalk";
 import { loadConfig } from "./config";
 import { DockerBuildOptions, dockerBuild } from "./components/docker";
 
@@ -57,14 +57,15 @@ export async function kubeBuild(_options: KubeBuildOptions) {
   if (_options.config) {
     config = loadConfig(_options.config, valuesOverrides);
   }
-  const { service } = config.app;
+  const { service, package: pkg } = config.app;
 
   const {
     image: { tag, repository: imageRepository }
   } = service.values;
 
   const dockerOptions: DockerBuildOptions = {
-    tag: `${imageRepository}:${tag}`
+    tag: `${imageRepository}:${tag}`,
+    "build-arg": `PORT=${pkg.port}`
   };
 
   const options = {

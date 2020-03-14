@@ -1,17 +1,22 @@
 {
-  "name": "service1",
-  "description": "service1 description",
-  "version": "1.2.21",
-  "port": 3000,
-  "dockerRepository": "01alchemist/service1",
-  "scripts": {
-    "start": "node index.js",
-    "build": "../../cli/kube-build --config=.kube/env/minikube.yml",
-    "push": "../../cli/kube-push --config=.kube/env/minikube.yml",
-    "deploy": "../../cli/kube-deploy --config=.kube/env/minikube.yml",
-    "deploy:review": "../../cli/kube-deploy --config=.kube/env/review.yml"
+  "name": "@01/micro-services",
+  "version": "1.0.0",
+  "author": "Nidin Vinayakan <01@01alchemist.com>",
+  "repository": "git@github.com:01alchemist/kube-tools.git",
+  "private": true,
+  "engines": {
+    "node": ">=12"
   },
-  "dependencies": {
-    "express": "4.17.1"
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "postinstall": "lerna bootstrap && yarn link @01/kube-tools && eval $(minikube docker-env)",
+    "build": "eval $(minikube docker-env) && lerna run build --stream",
+    "deploy": "lerna run deploy --stream"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "3.20.2"
   }
 }

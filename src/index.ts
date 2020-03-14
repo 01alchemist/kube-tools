@@ -1,3 +1,5 @@
+process.setMaxListeners(100);
+
 import "core-js/features/array/flat";
 
 export * from "./kube-deploy-v2";
